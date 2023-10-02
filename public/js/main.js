@@ -24,13 +24,6 @@ const readyButton = document.getElementById('ready');
 var readyStatus = false;
 
 
-socket.on('success', (index, currentNote)=>{
-    console.log(currentNote)
-    console.log('Player position is:' + playerIndex)
-    playerIndex = index;
-
-})
-
 // join room and send username and room name to server
 socket.emit('joinRoom', {username, room});
 
@@ -63,29 +56,22 @@ function outputUsers(users){
     `;
 }
 
-socket.on('noteArray', noteArray => {
+socket.on('noteArray', (noteArray, index) => {
     console.log(noteArray); 
 
-    
-    const TREBLE_CLEFF_OFFSET = 100;
-    const VERTICAL_OFFSET = 64;
-    const NOTE_HORIZONTAL_OFFSET = 30;
-
-    for(let i = playerIndex; i < Math.min(noteArray.length, i+10); i++){
-        const div = document.createElement('div');
-        const noteLocation = noteArray[i]
-        div.classList.add('note');
-        div.setAttribute('id', `note-${i}`);
-        document.querySelector('.staff').appendChild(div);
-        document.getElementById(`note-${i}`).style.top = String(parseInt(VERTICAL_OFFSET - (noteLocation * 6)))+ 'px';
-        document.getElementById(`note-${i}`).style.left = String(parseInt(TREBLE_CLEFF_OFFSET + i * NOTE_HORIZONTAL_OFFSET))+ 'px';
-    }
+    updateNotes(index, noteArray);
    // return noteArray;
+});
+
+socket.on('success', (index, noteArray) =>{
+    console.log(noteArray[index])
+    playerIndex = index;
+    console.log('Player position is:' + playerIndex)
+    updateNotes(index, noteArray);
 })
 
 document.getElementById('chat-form').addEventListener('keyup', function(e) {
     e.preventDefault();
-    console.log(input.value)
     if (input.value) {
       socket.emit('noteGuess', input.value, playerIndex);
       input.value = '';
@@ -117,7 +103,35 @@ function startGame(){
 
 //console.log(getNoteArray(noteArray, raceLength))
 
+function updateNotes (index, noteArray){
+    const TREBLE_CLEFF_OFFSET = 100;
+    const VERTICAL_OFFSET = 64;
+    const NOTE_HORIZONTAL_OFFSET = 30;
 
+    if(index == 0){
+        var prevIndex = false;
+    }else{
+        var prevIndex = index - 1;
+    }
+
+    console.log(prevIndex)
+
+    if(prevIndex){
+        document.getElementById(`note-${prevIndex}`).remove();
+    }
+
+    for(let i = index; i < Math.min(noteArray.length, index + 5); i++){
+        const div = document.createElement('div');
+        const noteLocation = noteArray[i];
+
+        div.classList.add('note');
+        div.setAttribute('id', `note-${i}`); 
+        document.querySelector('.staff').appendChild(div);
+        document.getElementById(`note-${i}`).style.top = String(parseInt(VERTICAL_OFFSET - (noteLocation * 6)))+ 'px';
+        document.getElementById(`note-${i}`).style.left = String(parseInt(TREBLE_CLEFF_OFFSET + (i - index) * NOTE_HORIZONTAL_OFFSET))+ 'px';
+    
+    }
+}
 
 function displayLetter() {
 

@@ -11,22 +11,7 @@
     --staff-width: 200px;
     --note-guess-width: 20px;
     --note-guess-height: 15px;
-    --button-width: 100px;
-    --button-height: 50px;
-    --exit-button-dim: 30px;
-    --instructions-width: 400px;
-    --instructions-height: 300px;
-    --multiplier-border-1x: solid 2px red;
-    --multiplier-border-2x: solid 2PX orange;
-    --multiplier-border-3x: solid 2px green;
-    --multiplier-border-4x: solid 2px blue;
-    --multiplier-border-5x: solid 2px indigo;
-    --multiplier-border-6x: solid 2px violet;
-    --multiplier-border-7x: solid 2px #f37186;
-    --multiplier-border-8x: solid 2px #ff7700;
-    --background: darkolivegreen; 
     --highlight: blanchedalmond;
-    --button-color: green;
     --lowlight: black;
 }
 
@@ -56,6 +41,7 @@ a {
 	padding: 5px 15px;
 	background: var(--light-color);
 	color: var(--dark-color-a);
+	border-radius: 5px;
 	border: 0;
 	font-size: 17px;
 }

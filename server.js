@@ -10,9 +10,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 const RACE_LENGTH = 10;
-const noteArray = newNoteArray(RACE_LENGTH);
+var noteArray;
 const notes = ['e','f','g','a','b','c','d'];
-const noteLetterArray = getNoteArray(noteArray, RACE_LENGTH);
+var noteLetterArray;
 var readyCount = 0;
 
 
@@ -40,8 +40,11 @@ io.on('connection', socket => {
             
     
             if(readyCount >= 2){
+                index = 0;
+                noteArray = newNoteArray(RACE_LENGTH);
+                noteLetterArray = getNoteArray(noteArray, RACE_LENGTH);
                 io.to(user.room).emit('startCountDown', 3);
-                io.to(user.room).emit('noteArray', noteArray);
+                io.to(user.room).emit('noteArray', noteArray, index);
                 io.to(user.room).emit('noteLetters', noteLetterArray)
             }
     
@@ -61,7 +64,7 @@ io.on('connection', socket => {
                 console.log('correct')
                 index++;
                 console.log('Backend index is' + index);
-                socket.emit('success', index, noteLetterArray[index]);
+                socket.emit('success', index, noteArray);
             }
         });
         
