@@ -24,15 +24,20 @@
       </div>
       
       <div class="chat-messages">
+        
+
         <div id="gameDiv" class="gameplayContainer">     
           <div id="staff" class="staff">
+            <div id="timerContainer">
+              <div id="timer"></div>
+            </div>
               <img src="treble-clef.png" id="treble-clef">
               <div class="line line-1"></div>
               <div class="line line-2"></div>
               <div class="line line-3"></div>
               <div class="line line-4"></div>
               <div class="line line-5"></div>
-              
+              <div id="note-container" class="noteContainer"></div>
           </div>        
         </div>
       </div>
@@ -48,6 +53,7 @@
           placeholder="Enter Note"
           required
           autocomplete="off"
+          readonly="true"
         />
       </form>
     </div>

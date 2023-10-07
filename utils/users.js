@@ -1,7 +1,7 @@
 const users = [];
 
-function userJoin( id, username, room){
-    const user = { id, username, room };
+function userJoin( id, username, room, readyStatus, startTime, endTime){
+    const user = { id, username, room, readyStatus, startTime, endTime };
 
     users.push(user);
 
@@ -24,9 +24,26 @@ function getRoomUsers(room){
     return users.filter(user => user.room === room);
 }
 
+function updateStartTime(room, startTime){
+   users.forEach(function(user){
+    if(user.room === room){
+        user.startTime = startTime;
+    }
+   })
+}
+
+function updateEndTime(user, endTime){
+    user.endTime = endTime;
+}
+
+
+
+
 module.exports = {
     userJoin,
     userLeave,
     getCurrentUser,
-    getRoomUsers
+    getRoomUsers,
+    updateStartTime,
+    updateEndTime
 };

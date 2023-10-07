@@ -2,50 +2,65 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
-const { userJoin, userLeave, getCurrentUser, getRoomUsers } = require('./utils/users');
+const { userJoin, userLeave, getCurrentUser, getRoomUsers, updateStartTime, updateEndTime} = require('./utils/users');
 const {newNoteArray, getNoteArray} = require('./utils/notes');
 
 
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
-const RACE_LENGTH = 10;
+const RACE_LENGTH = 25;
 var noteArray;
-const notes = ['e','f','g','a','b','c','d'];
 var noteLetterArray;
-var readyCount = 0;
+
 
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+const roomReadyCounts = {};
+const roomRaceCompletes = {};
+
 io.on('connection', socket => {
     console.log(`User connected with ID: ${socket.id}`);
     
-    socket.on('joinRoom', ({ username, room})=>{
-        const user = userJoin(socket.id, username, room);
+    socket.on('joinRoom', ({ username, room, readyStatus})=>{
+        const user = userJoin(socket.id, username, room, readyStatus);
         socket.join(user.room);
+
+
 
         io.to(user.room).emit('roomUsers', {
             room: user.room,
-            users: getRoomUsers(user.room)
+            users: getRoomUsers(user.room),
+            userReady: user.readyStatus
         });
            
         socket.on('ready', (socket, readyStatus) =>{
-            console.log(`${username} is ready`)
+            //user.readyStatus = readyStatus
+            
             if(readyStatus){
-                readyCount++;
+                console.log(`${username} is ready`)
+
+                if (!roomReadyCounts[user.room]) {
+                    roomReadyCounts[user.room] = 0;
+                }
+                roomReadyCounts[user.room]++;
             }else{
-                readyCount--;
+                console.log(`${username} is not ready`)
+                roomReadyCounts[user.room]--;
             }
             
     
-            if(readyCount >= 2){
+            if(roomReadyCounts[user.room] >= 2){
                 index = 0;
                 noteArray = newNoteArray(RACE_LENGTH);
                 noteLetterArray = getNoteArray(noteArray, RACE_LENGTH);
-                io.to(user.room).emit('startCountDown', 3);
-                io.to(user.room).emit('noteArray', noteArray, index);
-                io.to(user.room).emit('noteLetters', noteLetterArray)
+                const startTime = new Date();
+                updateStartTime(user.room, startTime)
+                
+                
+
+                io.to(user.room).emit('startGame', noteArray, index );
             }
     
         });
@@ -55,15 +70,26 @@ io.on('connection', socket => {
         socket.on('noteGuess', (note, index) => {
             console.log(`${username} ${note} ${index}`)
             console.log(note == noteLetterArray[index])
-            // if(index = RACE_LENGTH - 1){
-            //     socket.emit('gameOver', gametime => {
+            if(note ==  noteLetterArray[index] && index == RACE_LENGTH - 1){
+                endTime = new Date();
+                updateEndTime(user, endTime)
+                const raceTime = Math.floor((user.endTime - user.startTime) / 1000)
+                socket.emit('userRaceComplete', raceTime)
+
+                if (!roomRaceCompletes[user.room]) {
+                    roomRaceCompletes[user.room] = 0;
+                }
+                roomRaceCompletes[user.room]++
+
+                if(roomRaceCompletes){
                     
-            //     })
-            // }
+                }
+            }
             if(note == noteLetterArray[index]){
                 console.log('correct')
                 index++;
-                console.log('Backend index is' + index);
+                console.log('Backend index is ' + index);
+                io.to(user.room).emit('competitorPosition', username, index);
                 socket.emit('success', index, noteArray);
             }
         });
@@ -79,6 +105,9 @@ io.on('connection', socket => {
 
         if (user) {
             
+            if (roomReadyCounts[user.room]) {
+                roomReadyCounts[user.room]--;
+            }
 
             //Send room and users 
             io.to(user.room).emit('roomUsers', {
