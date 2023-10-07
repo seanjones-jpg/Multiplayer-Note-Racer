@@ -262,3 +262,22 @@ a {
     background-color: var(--dark-color-a); /* Change the color to blue or your preferred color */
     width: 0; /* Start with a width of 0, it will be updated dynamically */
 }
+
+.results-container{
+	display: none;
+	position: absolute;
+	width: 75vw;
+	height: 75vh;
+	top: 12.5%;
+	left: 12.5%;
+	background-color: var(--dark-color-b);
+	justify-content: center;
+	align-items: center;
+
+}
+
+#userResults{
+	position: relative;
+	top: 30%;
+	font-size: 5vh;
+}

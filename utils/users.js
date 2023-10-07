@@ -36,7 +36,24 @@ function updateEndTime(user, endTime){
     user.endTime = endTime;
 }
 
-
+function userPlacements(room){
+    const userPlacementArray = [];
+    users.forEach(function(user){
+        if(user.room === room){
+            const raceTime = user.endTime - user.startTime;
+            const displayTime = Math.floor(raceTime / 1000);
+            const username = user.username
+            userPlacementArray.push({ username, displayTime});
+        }
+       })
+    
+    userPlacementArray.sort((a, b) => {
+        if(a.raceTime < b.raceTime) return -1;
+        if(a.raceTime > b.raceTime) return 1;
+        return 0; 
+    })
+    return userPlacementArray;
+}
 
 
 module.exports = {
@@ -45,5 +62,6 @@ module.exports = {
     getCurrentUser,
     getRoomUsers,
     updateStartTime,
-    updateEndTime
+    updateEndTime,
+    userPlacements
 };

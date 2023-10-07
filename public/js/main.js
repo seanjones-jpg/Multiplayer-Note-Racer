@@ -1,14 +1,16 @@
+
+
 const chatForm = document.getElementById('chat-form');
 const noteGuess = document.querySelector('.note-guess');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
-
+const userResults = document.getElementById('userResults');
 
 
 
 var playerIndex = 0;
 var maxNoteShown = 10;
-RACE_LENGTH = 25;
+RACE_LENGTH = 5;
 // Get username and room from URL
 const { username, room } = Qs.parse(location.search, {
     ignoreQueryPrefix: true
@@ -18,7 +20,7 @@ const { username, room } = Qs.parse(location.search, {
 
 const socket = io();
 
-var form = document.getElementById('chat-form');
+const placements = ['first', 'second', 'third', 'fourth']
 var input = document.getElementById('note-guess');
 const readyButton = document.getElementById('ready');
 var readyStatus = false;
@@ -42,13 +44,11 @@ function outputRoomName(room) {
 
 //Add users to DOM
 
-function outputUsers(users, playerIndex){
-    var progress = Math.floor(playerIndex / RACE_LENGTH);
+function outputUsers(users){
     userList.innerHTML = `
     ${users.map(user => `
     <div id="${user.username}-container" class="user-container">
         <div id="${user.username}" class="${user.username}-progress-bar progress-bar">${user.username}</div>
-        
     </div>`
 ).join('')}
 `;
@@ -59,10 +59,7 @@ socket.on('competitorPosition', (username, index) =>{
     const userElement = document.querySelector(`.user-container#${username}-container`);
     const progressBar = userElement.querySelector('.progress-bar');
     const progress = (index / RACE_LENGTH) * 100; // Calculate progress as a percentage
-    progressBar.style.width = `${progress}%`;
-    console.log(username + ' is at ' + index)
-   // document.getElementById(username).style.width = `${Math.floor(index / RACE_LENGTH)}%`
-
+    progressBar.style.width = `${progress}%`; // Set progressBar width to represent player progress
 })
 
 readyButton.addEventListener('click', function() {
@@ -92,6 +89,18 @@ socket.on('success', (index, noteArray) =>{
 
 socket.on('userRaceComplete', (raceTime) =>{
     console.log(raceTime)
+})
+
+socket.on('raceComplete', (resultArray) =>{
+    document.querySelector('.results-container').style.display = 'block';
+    for(let i = 0; i < resultArray.length; i++){
+        var ul = document.getElementById("userResults");
+        var li = document.createElement("li");
+        var text = document.createTextNode(`${resultArray[i].username} finished  ${placements[i]} in ${resultArray[i].displayTime} seconds`);    
+        li.appendChild(text);
+        ul.appendChild(li);
+    }
+    
 })
 
 document.getElementById('chat-form').addEventListener('keyup', function(e) {

@@ -2,14 +2,14 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
-const { userJoin, userLeave, getCurrentUser, getRoomUsers, updateStartTime, updateEndTime} = require('./utils/users');
+const { userJoin, userLeave, getCurrentUser, getRoomUsers, updateStartTime, updateEndTime, userPlacements} = require('./utils/users');
 const {newNoteArray, getNoteArray} = require('./utils/notes');
 
 
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
-const RACE_LENGTH = 25;
+const RACE_LENGTH = 5;
 var noteArray;
 var noteLetterArray;
 
@@ -39,14 +39,12 @@ io.on('connection', socket => {
             //user.readyStatus = readyStatus
             
             if(readyStatus){
-                console.log(`${username} is ready`)
 
                 if (!roomReadyCounts[user.room]) {
                     roomReadyCounts[user.room] = 0;
                 }
                 roomReadyCounts[user.room]++;
             }else{
-                console.log(`${username} is not ready`)
                 roomReadyCounts[user.room]--;
             }
             
@@ -68,8 +66,6 @@ io.on('connection', socket => {
         console.log(noteArray);
 
         socket.on('noteGuess', (note, index) => {
-            console.log(`${username} ${note} ${index}`)
-            console.log(note == noteLetterArray[index])
             if(note ==  noteLetterArray[index] && index == RACE_LENGTH - 1){
                 endTime = new Date();
                 updateEndTime(user, endTime)
@@ -81,14 +77,15 @@ io.on('connection', socket => {
                 }
                 roomRaceCompletes[user.room]++
 
-                if(roomRaceCompletes){
-                    
+                console.log(roomRaceCompletes[user.room])
+                if(roomRaceCompletes[user.room] >= 2){
+                    console.log("RACE COMPLETE")
+                    const resultArray = userPlacements(room)
+                    io.to(user.room).emit('raceComplete', resultArray)
                 }
             }
             if(note == noteLetterArray[index]){
-                console.log('correct')
                 index++;
-                console.log('Backend index is ' + index);
                 io.to(user.room).emit('competitorPosition', username, index);
                 socket.emit('success', index, noteArray);
             }
